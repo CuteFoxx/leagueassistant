@@ -1,19 +1,11 @@
+import { fileURLToPath } from "url";
+import { REST, Routes } from "discord.js";
+import process from "node:process";
 import fs from "node:fs";
 import path from "node:path";
-import { dirname } from "path";
-import process from "node:process";
-import {
-  Collection,
-  Events,
-  GatewayIntentBits,
-  MessageFlags,
-} from "discord.js";
-import CustomClient from "./CustomClient.ts";
-import type { Command } from "./interfaces/Command.ts";
-import { fileURLToPath } from "node:url";
 
 (async () => {
-  const commands = new Collection<string, Command>();
+  const commands = [];
   const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
   const __dirname = path.dirname(__filename);
   const foldersPath = path.join(__dirname, "commands");
@@ -30,7 +22,7 @@ import { fileURLToPath } from "node:url";
       command = command.default;
       // Set a new item in the Collection with the key as the command name and the value as the exported module
       if ("data" in command && "execute" in command) {
-        commands.set(command.data.name, command);
+        commands.push(command.data.toJSON());
       } else {
         console.log(
           `[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`
@@ -39,22 +31,31 @@ import { fileURLToPath } from "node:url";
     }
   }
 
-  // Create a new client instance
-  const client = new CustomClient(
-    { intents: [GatewayIntentBits.Guilds] },
-    commands
-  );
+  // Construct and prepare an instance of the REST module
+  const rest = new REST().setToken(process.env.BOT_API_KEY ?? "");
 
-  // When the client is ready, run this code (only once).
-  // The distinction between `client: Client<boolean>` and `readyClient: Client<true>` is important for TypeScript developers.
-  // It makes some properties non-nullable.
-  client.once(Events.ClientReady, (readyClient) => {
-    console.log(`Ready! Logged in as ${readyClient.user.tag}`);
-  });
+  // and deploy your commands!
+  (async () => {
+    try {
+      console.log(
+        `Started refreshing ${commands.length} application (/) commands.`
+      );
 
-  client.on(Events.InteractionCreate, (interaction) => {
-    console.log(interaction);
-  });
+      // The put method is used to fully refresh all commands in the guild with the current set
+      const data = await rest.put(
+        Routes.applicationGuildCommands(
+          process.env.BOT_CLIENT_ID ?? "",
+          process.env.GUILD_ID ?? ""
+        ),
+        { body: commands }
+      );
 
-  await client.login(process.env.BOT_API_KEY);
+      console.log(
+        `Successfully reloaded ${data.length} application (/) commands.`
+      );
+    } catch (error) {
+      // And of course, make sure you catch and log any errors!
+      console.error(error);
+    }
+  })();
 })();

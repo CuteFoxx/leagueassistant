@@ -12,7 +12,7 @@ RUN cd /usr/src/app
 
 RUN npm install
 
-RUN npm install -g ts-node
+RUN npm install -g tsc 
 
 CMD ["npm", "run", "dev"]
 
