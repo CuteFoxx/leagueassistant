@@ -42,7 +42,7 @@ import path from "node:path";
       );
 
       // The put method is used to fully refresh all commands in the guild with the current set
-      const data = await rest.put(
+      const data: any = await rest.put(
         Routes.applicationGuildCommands(
           process.env.BOT_CLIENT_ID ?? "",
           process.env.GUILD_ID ?? ""

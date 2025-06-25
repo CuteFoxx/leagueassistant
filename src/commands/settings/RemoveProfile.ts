@@ -7,8 +7,8 @@ import CustomClient from "../../CustomClient.ts";
 import { AxiosError } from "axios";
 
 const data = new SlashCommandBuilder()
-  .setName("add-profile")
-  .setDescription("Add league profile for assistant to track")
+  .setName("remove-profile")
+  .setDescription("Remove league profile from assistant")
   .addStringOption((option) =>
     option
       .setName("ign")
@@ -19,26 +19,13 @@ const data = new SlashCommandBuilder()
 const execute = async (interaction: ChatInputCommandInteraction) => {
   const client = interaction.client as CustomClient;
   const db = client.getDatabase();
-  const riotApi = client.getRiotApi();
+
   const regex = /^.{3,}#.{3,}$/i;
   const ign = interaction.options.getString("ign") ?? "";
 
   if (!regex.test(ign)) {
     await sendReply(interaction, "Invalid ign");
 
-    return;
-  }
-
-  const [name, tag] = ign.split("#");
-  const res = await riotApi?.getAccountByRiotId(name, tag);
-
-  if (res instanceof AxiosError) {
-    if (res.status == 404) {
-      await sendReply(interaction, "Account not found!");
-      return;
-    } else {
-      await sendReply(interaction, res.message);
-    }
     return;
   }
 
@@ -49,14 +36,11 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 
   // MAKE some global var for table name idk
   if (result) {
-    await sendReply(interaction, "This account already added");
+    const TBD = db?.prepare("DELETE FROM users WHERE ign = ? AND addedBy = ?");
+    TBD?.run(ign, interaction.member?.user.id);
+    await sendReply(interaction, "Account deleted");
   } else {
-    const stmt = db?.prepare(
-      "INSERT INTO users (ign, addedBy, puuid) VALUES (?, ?, ?)"
-    );
-    stmt?.run(ign, interaction?.member?.user.id, res.puuid);
-
-    await sendReply(interaction, "Account added successfully");
+    await sendReply(interaction, "You haven't tracked this account");
   }
 };
 

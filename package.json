@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon",
+    "deploy-commands": "node --env-file=.env --no-warnings=ExperimentalWarning -r ts-node/register ./src/deploy-commands.ts",
     "build": "tsc",
     "start": "./dist/index.js"
   },
@@ -13,11 +14,16 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
-    "discord.js": "^14.19.3"
+    "axios": "^1.10.0",
+    "better-sqlite3": "^12.0.0",
+    "discord.js": "^14.19.3",
+    "node-schedule": "^2.1.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^24.0.3",
+    "@types/node-schedule": "^2.1.7",
     "dotenv-cli": "^8.0.0",
     "eslint": "^9.29.0",
     "globals": "^16.2.0",
