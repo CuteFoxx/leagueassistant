@@ -7,15 +7,15 @@ import RiotApi from "./APIs/RiotApi.ts";
 class CustomClient extends Client {
   public commands: Collection<string, Command>;
 
-  public db: Database | null;
+  public db: Database;
 
-  public riotApi: RiotApi | null;
+  public riotApi: RiotApi;
 
   public constructor(
     options: ClientOptions,
     commands: Collection<string, Command>,
-    db: Database | null = null,
-    riotApi: RiotApi | null = null
+    db: Database,
+    riotApi: RiotApi
   ) {
     super(options);
     this.commands = commands;
@@ -27,7 +27,7 @@ class CustomClient extends Client {
     return this.commands;
   }
 
-  public getDatabase(): Database | null {
+  public getDatabase(): Database {
     return this.db;
   }
 
@@ -36,7 +36,7 @@ class CustomClient extends Client {
     return this;
   }
 
-  public getRiotApi(): RiotApi | null {
+  public getRiotApi(): RiotApi {
     return this.riotApi;
   }
 

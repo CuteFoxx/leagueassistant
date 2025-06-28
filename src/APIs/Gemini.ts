@@ -19,7 +19,7 @@ export class Gemini {
   }
 
   public async getVideoAboutMatchup(matchup: Matchup) {
-    const prompt = `Give me just link to the recent replay of matchup ${matchup.user.champion} vs ${matchup.opponent.champion}  on ${matchup.user.role} lane. You should  not type any text just provide one link`;
+    const prompt = `@YouTube  ${matchup.user.champion} vs ${matchup.opponent.champion} League of legends provide recent video from search results. Dont type any text at all just give me  1 link. Provide only one link based on latest search results without any additional text. Order of champions should be preserved as i provided at the start`;
 
     const res = await axios.post(this.getUrl(), {
       contents: [

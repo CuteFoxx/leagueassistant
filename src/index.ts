@@ -13,6 +13,7 @@ import { fileURLToPath } from "node:url";
 import initDB from "./database/InitDB.ts";
 import RiotApi from "./APIs/RiotApi.ts";
 import Schedule from "./schedule/Schedule.ts";
+import EventListener from "./Events/EventListener.ts";
 
 (async () => {
   const commands = new Collection<string, Command>();
@@ -23,8 +24,6 @@ import Schedule from "./schedule/Schedule.ts";
 
   const db = await initDB();
   const riotApi = new RiotApi(process.env.RIOT_API ?? "");
-
-  Schedule(riotApi);
 
   for (const folder of commandFolders) {
     const commandsPath = path.join(foldersPath, folder);
@@ -53,8 +52,12 @@ import Schedule from "./schedule/Schedule.ts";
     riotApi
   );
 
+  Schedule(client);
+
   client.once(Events.ClientReady, (readyClient) => {
     console.log(`Ready! Logged in as ${readyClient.user.tag}`);
+    // LISTEN TO EVENTS
+    EventListener();
   });
 
   client.on(Events.InteractionCreate, async (interaction) => {
