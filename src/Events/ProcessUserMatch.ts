@@ -13,6 +13,7 @@ export default async function ProcessUserMatch(
   const now = Date.now();
   const endTime = new Date(now + RUN_EVERY * MS_PER_MINUTE).getTime();
   const startTime = new Date(now - RUN_EVERY * MS_PER_MINUTE).getTime();
+  const db = client.getDatabase();
 
   const recentMatch = await riotApi
     ?.getMatchHistory(row.puuid)
@@ -27,24 +28,28 @@ export default async function ProcessUserMatch(
   if (!matchData) {
     return;
   }
-  await console.log(
-    `recent match of ${row.ign}: ${recentMatch} end time of match ${matchData["info"]["gameEndTimestamp"]}`
-  );
+
+  console.log("-");
 
   if (new Date(matchData["info"]["gameEndTimestamp"]).getTime() >= startTime) {
-    console.log("process this match");
+    console.log("processing");
+
+    const participants = matchData["info"].participants;
+    const matchup = RiotApi.getMatchup(row.puuid, participants);
+    const gemini = new Gemini(process.env.GEMINI_API ?? "");
+
+    setTimeout(async () => {
+      const res = await gemini.getVideoAboutMatchup(matchup);
+
+      const channelObj = db
+        .prepare("SELECT * FROM botSettings WHERE channel IS NOT NULL")
+        .get();
+
+      client?.channels?.cache
+        ?.get(channelObj.channel)
+        ?.send(
+          `<@${row.addedBy}> : ${row.ign} \n ${res["candidates"][0].content.parts[0].text}`
+        );
+    }, 1000);
   }
-
-  const participants = matchData["info"].participants;
-  const matchup = RiotApi.getMatchup(row.puuid, participants);
-  const gemini = new Gemini(process.env.GEMINI_API ?? "");
-
-  setTimeout(async () => {
-    const res = await gemini.getVideoAboutMatchup(matchup);
-
-    console.log(res["candidates"][0].content.parts[0]);
-    client.channels.cache
-      .get("1234669716531056664")
-      .send(res["candidates"][0].content.parts[0].text);
-  }, 1000);
 }
