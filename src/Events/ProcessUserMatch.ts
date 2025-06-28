@@ -29,11 +29,7 @@ export default async function ProcessUserMatch(
     return;
   }
 
-  console.log("-");
-
   if (new Date(matchData["info"]["gameEndTimestamp"]).getTime() >= startTime) {
-    console.log("processing");
-
     const participants = matchData["info"].participants;
     const matchup = RiotApi.getMatchup(row.puuid, participants);
     const gemini = new Gemini(process.env.GEMINI_API ?? "");
